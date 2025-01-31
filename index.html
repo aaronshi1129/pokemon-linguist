@@ -1,0 +1,680 @@
+<html><head><base href="." /><title>Pokemon Linguist Certification</title>
+<style>
+:root {
+  --primary: #2C3E50;
+  --secondary: #E74C3E;
+  --accent: #3498DB;
+  --background: #ECF0F1;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: var(--background);
+  margin: 0;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.game-container {
+  background: white;
+  padding: 2rem;
+  border-radius: 15px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  max-width: 600px;
+  width: 100%;
+  text-align: center;
+}
+
+.pokemon-display {
+  margin: 20px 0;
+  position: relative;
+}
+
+.pokemon-image {
+  width: 200px;
+  height: 200px;
+  border: 3px solid var(--accent);
+  border-radius: 10px;
+  margin-bottom: 15px;
+}
+
+.pokemon-name {
+  font-size: 2rem;
+  color: var(--primary);
+  margin: 1rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.speak-btn {
+  background: var(--accent);
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  padding: 5px;
+}
+
+.speak-btn:hover {
+  background: #2980b9;
+}
+
+.input-section {
+  margin: 20px 0;
+}
+
+input[type="text"] {
+  padding: 10px;
+  font-size: 1.1rem;
+  border: 2px solid var(--accent);
+  border-radius: 5px;
+  margin-right: 10px;
+}
+
+.submit-btn, .next-btn {
+  padding: 0.8rem 2rem;
+  font-size: 1.1rem;
+  background: var(--secondary);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.submit-btn:hover, .next-btn:hover {
+  background: #c0392b;
+}
+
+.submit-btn:disabled, input[type="text"]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.feedback {
+  font-size: 1.2rem;
+  margin: 1rem 0;
+  min-height: 60px;
+  padding: 10px;
+}
+
+.explanation {
+  background: #f7f9fc;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 20px;
+  display: none;
+}
+
+.score {
+  font-size: 1.5rem;
+  color: var(--primary);
+  margin: 1rem 0;
+}
+
+.achievement {
+  background: linear-gradient(45deg, #FFD700, #FFA500);
+  color: white;
+  padding: 15px;
+  border-radius: 8px;
+  margin: 15px 0;
+  animation: slideIn 0.5s ease-out;
+  display: none;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+</style>
+</head>
+<body>
+<div class="game-container">
+  <h1>Pokemon Linguist Qualification</h1>
+  <div class="score">Score: <span id="score">0</span></div>
+  <div id="achievement" class="achievement"></div>
+  <div class="pokemon-display">
+    <img id="pokemonImage" class="pokemon-image">
+    <div class="pokemon-name" id="pokemonName">
+      <span id="nameText"></span>
+      <button class="speak-btn" id="speakBtn" title="Listen to name">
+        <svg width="16" height="16" viewBox="0 0 16 16">
+          <path fill="currentColor" d="M11.5 3.5c0-1.5-1.5-2.5-3-1.5L4 5H2c-1 0-2 1-2 2v2c0 1 1 2 2 2h2l4.5 3c1.5 1 3 0 3-1.5v-9z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+  <div class="input-section">
+    <input type="text" id="rootInput" placeholder="Enter the root word">
+    <button class="submit-btn" id="submitBtn">Submit</button>
+    <div style="font-size: 0.9rem; color: #666; margin-top: 8px; text-align: left;">
+        Enter the root word of the Pokemon's name. The root word here can also be a word that the author of Pokemon drew inspiration from.
+    </div>
+  </div>
+  <div class="feedback" id="feedback"></div>
+  <div class="explanation" id="explanation"></div>
+  <button class="next-btn" id="nextBtn">Next Pokemon</button>
+  
+  <div class="author-info" style="margin-top: 20px; font-size: 0.8rem; color: #666; text-align: center;">
+    Author: Aaron Shi. Released in 2024. Last update on November 30, 2024.
+  </div>
+</div>
+
+<script>
+const pokemonData = [
+  {
+    name: "Charizard",
+    image: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/6.png",
+    root: "char",
+    explanation: "The root 'char' comes from the word 'char' meaning to burn or blacken by fire. This relates to Charizard's fire-type nature."
+  },
+  {
+    name: "Bulbasaur",
+    image: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png",
+    root: "bulb",
+    explanation: "The root 'bulb' refers to a rounded underground storage organ in plants. This relates to the bulb-like structure on Bulbasaur's back."
+  },
+  {
+    name: "Squirtle",
+    image: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png",
+    root: "squirt",
+    explanation: "The root 'squirt' means to eject liquid in a stream. This relates to Squirtle's water-type abilities."
+  },
+  {
+    name: "Butterfree",
+    image: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/12.png",
+    root: "butterfly",
+    explanation: "The root 'butterfly' is combined with 'free' to create this Pokemon's name, referring to its butterfly-like appearance and flying abilities."
+  },
+  {
+    name: "Sandshrew",
+    image: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/27.png",
+    root: "sand",
+    explanation: "The root 'sand' refers to loose grains of rock and minerals. This relates to Sandshrew's ground-type nature and habitat."
+  },
+  {
+  "name": "Ivysaur",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/2.png",
+  "root": "ivy",
+  "explanation": "The root 'ivy' refers to a climbing or trailing plant, often associated with greenery. Ivysaur's plant on its back resembles a blooming bud, symbolizing growth and nature."
+},
+{
+  "name": "Venusaur",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/3.png",
+  "root": "venus",
+  "explanation": "The root 'venus' refers to the Roman goddess of beauty and vegetation. Venusaur's fully blossomed flower represents the beauty and power of nature."
+},
+{
+  "name": "Charmander",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png",
+  "root": "char",
+  "explanation": "The root 'char' refers to burning or scorching. Charmander's tail flame symbolizes its fiery nature and connection to fire."
+},
+{
+  "name": "Wartortle",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/8.png",
+  "root": "war",
+  "explanation": "The root 'war' suggests combat or battle readiness. Wartortle's design, including its larger tail and ears, gives it a more combative and defensive appearance."
+},
+{
+  "name": "Blastoise",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/9.png",
+  "root": "blast",
+  "explanation": "The root 'blast' refers to a powerful explosion or burst. Blastoise's water cannons symbolize its ability to unleash powerful blasts of water."
+},
+{
+  "name": "Caterpie",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10.png",
+  "root": "caterpillar",
+  "explanation": "The 'cater' comes from 'caterpillar,' which Caterpie resembles. It symbolizes the early stage of metamorphosis."
+},
+{
+  "name": "Metapod",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/11.png",
+  "root": "meta",
+  "explanation": "The root 'meta' means 'change' or 'beyond.' Metapod represents the transitional stage of metamorphosis before becoming Butterfree."
+},
+{
+  "name": "Weedle",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/13.png",
+  "root": "weed",
+  "explanation": "The root 'weed' refers to unwanted plants. Weedle, like a pest in a garden, symbolizes its common presence and persistence."
+},
+{
+  "name": "Kakuna",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/14.png",
+  "root": "cocoon",
+  "explanation": "The root 'cocoon' refers to the protective casing during metamorphosis. Kakuna is in a cocoon-like state, preparing to evolve into Beedrill."
+},
+{
+  "name": "Beedrill",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/15.png",
+  "root": "bee",
+  "explanation": "The root 'bee' refers to the insect known for its stingers. Beedrill resembles a large bee with poisonous stingers, emphasizing its aggressive nature."
+},
+{
+  "name": "Pidgey",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/16.png",
+  "root": "pigeon",
+  "explanation": "The 'pidge' is derived from 'pigeon,' a common bird. Pidgey resembles a small bird known for its gentle nature and flight abilities."
+},
+{
+  "name": "Rattata",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/19.png",
+  "root": "rat",
+  "explanation": "The root 'rat' refers to the rodent known for its sharp teeth and agility. Rattata's design highlights these traits as a quick and persistent Pokémon."
+},
+{
+  "name": "Spearow",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/21.png",
+  "root": "spear",
+  "explanation": "The root 'spear' refers to a pointed weapon. Spearow's sharp beak and aggressive behavior reflect its ability to strike swiftly like a spear."
+},
+{
+  "name": "Fearow",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/22.png",
+  "root": "fear",
+  "explanation": "The root 'fear' highlights its intimidating presence. Fearow is a large, fierce bird capable of striking fear into its opponents with its sharp beak and claws."
+},
+{
+  "name": "Ekans",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/23.png",
+  "root": "snake",
+  "explanation": "The name 'Ekans' is 'snake' spelled backward. Ekans is a snake-like Pokémon known for its ability to coil and constrict."
+},
+{
+  "name": "Arbok",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/24.png",
+  "root": "cobra",
+  "explanation": "The root 'cobra' refers to a venomous snake. Arbok's hood markings and coiling nature resemble a cobra, emphasizing its poisonous capabilities."
+},
+{
+  "name": "Pikachu",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png",
+  "root": "pika",
+  "explanation": "The root 'pika' comes from the Japanese onomatopoeia for an electric spark. Pikachu embodies electricity, with its signature electric cheeks."
+},
+{
+  "name": "Raichu",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/26.png",
+  "root": "rai",
+  "explanation": "The root 'rai' means 'thunder' in Japanese. Raichu is the evolved form of Pikachu, representing a more powerful electric type."
+},
+{
+  "name": "Nidoran",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/29.png",
+  "root": "nido",
+  "explanation": "The root 'nido' may come from 'needle,' referring to its poisonous horn. Nidoran represents the first stage of this poisonous species."
+},
+{
+  "name": "Clefairy",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/35.png",
+  "root": "clef",
+  "explanation": "The root 'clef' refers to musical notation, symbolizing harmony. Clefairy is known for its mystical, peaceful nature and ties to the moon."
+},
+{
+  "name": "Vulpix",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/37.png",
+  "root": "vulpes",
+  "explanation": "The 'vulp' comes from the Latin word 'vulpes,' meaning fox. Vulpix resembles a fox and has fiery characteristics."
+},
+{
+  "name": "Ninetales",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/38.png",
+  "root": "tail",
+  "explanation": "The 'tale' originates from 'tail.' Combining with the prefix 'nine', it becomes Ninetales because this Pokémon has nine tails. Ninetales is inspired by the mythical nine-tailed fox, symbolizing wisdom and mysticism."
+},
+{
+  "name": "Zubat",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/41.png",
+  "root": "bat",
+  "explanation": "The root 'bat' refers to the nocturnal flying mammal. Zubat resembles a bat, known for navigating in the dark using echolocation."
+},
+{
+  "name": "Oddish",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/43.png",
+  "root": "odd",
+  "explanation": "The root 'odd' suggests something unusual. Oddish is a strange plant-like Pokémon with leaves growing from its head."
+},
+{
+  "name": "Gloom",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/44.png",
+  "root": "gloom",
+  "explanation": "The root 'gloom' refers to sadness or darkness. Gloom’s drooping flower and oozing nectar give it a gloomy appearance."
+},
+{
+  "name": "Vileplume",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/45.png",
+  "root": "vile",
+  "explanation": "The root 'vile' means offensive or unpleasant. Vileplume's large flower emits a toxic, foul-smelling pollen, aligning with its name."
+},
+{
+  "name": "Parasect",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/47.png",
+  "root": "parasite",
+  "explanation": "The 'paras' comes from 'parasite.' Parasect is controlled by a mushroom on its back, symbolizing parasitic fungi."
+},
+{
+  "name": "Venomoth",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/49.png",
+  "root": "venom",
+  "explanation": "The root 'venom' refers to poison. Venomoth’s powdery wings can release toxic dust, emphasizing its poisonous abilities."
+},
+{
+  "name": "Dugtrio",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/51.png",
+  "root": "trio",
+  "explanation": "The root 'trio' means three. Dugtrio consists of three Digletts working together, symbolizing unity and cooperation."
+},
+{
+  "name": "Meowth",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/52.png",
+  "root": "meow",
+  "explanation": "The root 'meow' is the sound cats make. Meowth resembles a cat, known for its feline grace and mischievous nature."
+},
+{
+  "name": "Persian",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/53.png",
+  "root": "Persian",
+  "explanation": "The name 'Persian' refers to the Persian cat breed, known for elegance. Persian exudes grace and sophistication."
+},
+{
+  "name": "Psyduck",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/54.png",
+  "root": "duck",
+  "explanation": "The prefix 'psy' refers to psychic powers of this duck. Psyduck often experiences headaches, hinting at latent psychic abilities."
+},
+{
+  "name": "Mankey",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/56.png",
+  "root": "monkey",
+  "explanation": "The root 'monkey' refers to primates. Mankey resembles a small monkey, known for its quick temper and agility."
+},
+{
+  "name": "Primeape",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/57.png",
+  "root": "ape",
+  "explanation": "The root 'ape' refers to apes. After adding 'prime', it suggests being the best or strongest. Primeape is an evolved form, symbolizing heightened strength and rage."
+},
+{
+  "name": "Growlithe",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/58.png",
+  "root": "growl",
+  "explanation": "The root 'growl' refers to the sound dogs make when guarding. Growlithe is loyal and protective, resembling a guard dog."
+},
+{
+  "name": "Arcanine",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/59.png",
+  "root": "canine",
+  "explanation": "The root 'canine' are dogs. The name combines 'arc' and 'canine.' Arcanine is revered for its majestic and powerful presence."
+},
+{
+  "name": "Poliwag",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/60.png",
+  "root": "wag",
+  "explanation": "The prefix 'poli' is derived from 'poly,' meaning many, and the root 'wag' means moving from side to side, for example, 'to wag the tail.' Poliwag's spiral pattern hints at its water-based evolution."
+},
+{
+  "name": "Kadabra",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/64.png",
+  "root": "abracadabra",
+  "explanation": "The name 'Kadabra' is derived from 'abracadabra,' a magic word, representing its psychic abilities and mysterious powers."
+},
+  {
+  "name": "Machoke",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/67.png",
+  "root": "choke",
+  "explanation": "The root 'choke' suggests grappling or restraining. Machoke is a stronger evolution, capable of powerful physical moves."
+},
+{
+  "name": "Machamp",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/68.png",
+  "root": "champ",
+  "explanation": "The root 'champ' refers to a champion. Machamp’s four arms and immense power symbolize dominance in battle."
+},
+{
+  "name": "Bellsprout",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/69.png",
+  "root": "bell",
+  "explanation": "The root 'bell' refers to the bell-like shape of its head. Bellsprout resembles a plant with a bell-shaped flower."
+},
+{
+  "name": "Tentacool",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/72.png",
+  "root": "tentacle",
+  "explanation": "The root 'tentacle' refers to the appendages of sea creatures. Tentacool has tentacles that it uses to grasp and attack."
+},
+{
+  "name": "Geodude",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/74.png",
+  "root": "geo",
+  "explanation": "The root 'geo' comes from the Greek word for 'earth.' Geodude resembles a rock and is associated with the ground and rock types."
+},
+{
+  "name": "Graveler",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/75.png",
+  "root": "gravel",
+  "explanation": "The root 'gravel' refers to small stones. Graveler is a rock-like Pokémon covered in rough, gravel-like surfaces."
+},
+{
+  "name": "Ponyta",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/77.png",
+  "root": "pony",
+  "explanation": "The root 'pony' refers to a small horse. Ponyta resembles a fiery pony, known for its speed and flame-covered mane."
+},
+{
+  "name": "Slowbro",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/80.png",
+  "root": "slow",
+  "explanation": "The root 'slow' refers to its sluggish nature. Slowbro is a slow-moving Pokémon with a Shellder attached to its tail."
+},
+{
+  "name": "Magneton",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/82.png",
+  "root": "magnet",
+  "explanation": "The root 'magnet' refers to its magnetic properties. Magneton is formed by three Magnemite and generates strong magnetic fields."
+},
+{
+  "name": "Doduo",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/84.png",
+  "root": "duo",
+  "explanation": "The root 'duo' means two. Doduo has two heads, each with its own personality, symbolizing duality."
+},
+{
+  "name": "Seel",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/86.png",
+  "root": "seal",
+  "explanation": "The root 'seal' refers to the marine animal. Seel resembles a seal and is known for its aquatic abilities."
+},
+{
+  "name": "Farfetch'd",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/83.png",
+  "root": "fetch",
+  "explanation": "The root 'fetch' comes from the phrase 'far-fetched,' meaning unusual. Farfetch'd carries a leek, adding to its quirky appearance."
+},
+{
+  "name": "Grimer",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/88.png",
+  "root": "grime",
+  "explanation": "The root 'grime' refers to dirt or filth. Grimer is made of sludge and is associated with pollution and toxicity."
+},
+  {
+  "name": "Cloyster",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/91.png",
+  "root": "oyster",
+  "explanation": "Cloyster's name is a simple and fitting combination of the words 'clam' and 'oyster'. Cloyster has a tough shell that encloses its body, providing strong defense."
+},
+{
+  "name": "Gastly",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/92.png",
+  "root": "gas",
+  "explanation": "The root 'gas' refers to its ghostly, gaseous form. Gastly is made of gas and is known for its eerie, floating appearance."
+},
+{
+  "name": "Shellder",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/90.png",
+  "root": "shell",
+  "explanation": "The root 'shell' refers to the hard protective covering. Shellder resembles a clam with a strong shell for defense."
+},
+{
+  "name": "Haunter",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/93.png",
+  "root": "haunt",
+  "explanation": "The root 'haunt' refers to ghostly presence. Haunter's spectral form and floating hands give it an ominous, haunting appearance."
+},
+{
+  "name": "Onix",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/95.png",
+  "root": "onyx",
+  "explanation": "The root 'onyx' refers to a type of mineral or gemstone. Onix resembles a giant rock snake made of stone segments."
+},
+{
+  "name": "Jigglypuff",
+  "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/39.png",
+  "root": "jiggly",
+  "explanation": "The root 'jiggly' refers to something soft and wobbly. Jigglypuff's round, soft body and its ability to sing lullabies align with its name."
+}
+];
+
+let currentPokemon;
+let score = 0;
+let achievementsShown = {
+  beginner: false,
+  specialist: false,
+  master: false
+};
+let currentPokemonAnswered = false;
+let remainingPokemon = [...pokemonData];
+
+function speakText(text) {
+  if ('speechSynthesis' in window) {
+    const utterance = new SpeechSynthesisUtterance(text);
+    speechSynthesis.speak(utterance);
+  }
+}
+
+function showAchievement(message, level) {
+  const achievement = document.getElementById('achievement');
+  achievement.textContent = message;
+  achievement.style.display = 'block';
+}
+
+function showFinalCongratulations() {
+  const currentDate = new Date().toLocaleDateString();
+  const gameContainer = document.querySelector('.game-container');
+  
+  const trophySvg = `
+    <svg width="100" height="100" viewBox="0 0 24 24" style="margin: 20px;">
+      <path fill="gold" d="M18 5h2v3h-2zm-2-2h2v3h-2zm-2 2h2v3h-2zm-2-2h2v3h-2zm-2 2h2v3h-2zm-2-2h2v3H8zm-2 2h2v3H6zM4 5h2v3H4zm1 3v2h2V8H5zm12 0v2h2V8h-2zM5 16h14v2H5zm3-6h8v4H8z"/>
+    </svg>
+  `;
+  
+  gameContainer.innerHTML = `
+    <h1>Pokemon Linguist Certification</h1>
+    <div class="achievement" style="display: block;">
+      ${trophySvg}
+      <h2>🏆 Congratulations! 🏆</h2>
+      <p>You're now an Ultimate Master Pokemon Linguist.</p>
+      <p>You've won this title on ${currentDate}</p>
+    </div>
+  `;
+}
+
+function checkAchievements() {
+  const achievement = document.getElementById('achievement');
+  
+  if (score >= 200 && !achievementsShown.master) {
+    showAchievement('🏆 You are a Master Pokemon Linguist!', 'master');
+    achievementsShown.master = true;
+    achievementsShown.specialist = true;
+    achievementsShown.beginner = true;
+  } else if (score >= 100 && !achievementsShown.specialist) {
+    showAchievement('🌟 You are a Specialist Pokemon Linguist!', 'specialist');
+    achievementsShown.specialist = true;
+    achievementsShown.beginner = true;
+  } else if (score >= 30 && !achievementsShown.beginner) {
+    showAchievement('🎉 You are a Beginning Pokemon Linguist!', 'beginner');
+    achievementsShown.beginner = true;
+  }
+}
+
+function displayNewPokemon() {
+  if (remainingPokemon.length === 0) {
+    showFinalCongratulations();
+    return;
+  }
+  
+  const randomIndex = Math.floor(Math.random() * remainingPokemon.length);
+  currentPokemon = remainingPokemon[randomIndex];
+  remainingPokemon.splice(randomIndex, 1);
+  
+  document.getElementById('pokemonImage').src = currentPokemon.image;
+  document.getElementById('nameText').textContent = currentPokemon.name;
+  document.getElementById('rootInput').value = '';
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('explanation').style.display = 'none';
+  currentPokemonAnswered = false;
+  document.getElementById('submitBtn').disabled = false;
+  document.getElementById('rootInput').disabled = false;
+}
+
+function checkAnswer() {
+  if (currentPokemonAnswered) {
+    return;
+  }
+
+  const userAnswer = document.getElementById('rootInput').value.toLowerCase().trim();
+  const feedback = document.getElementById('feedback');
+  const explanation = document.getElementById('explanation');
+  
+  if (userAnswer === currentPokemon.root) {
+    score += 10;
+    document.getElementById('score').textContent = score;
+    feedback.textContent = 'Correct! 🎉';
+    feedback.style.color = '#27ae60';
+    explanation.textContent = currentPokemon.explanation;
+    explanation.style.display = 'block';
+    checkAchievements();
+    
+    currentPokemonAnswered = true;
+    document.getElementById('submitBtn').disabled = true;
+    document.getElementById('rootInput').disabled = true;
+  } else {
+    feedback.textContent = 'Try again!';
+    feedback.style.color = '#c0392b';
+    explanation.style.display = 'none';
+  }
+}
+
+document.getElementById('submitBtn').addEventListener('click', checkAnswer);
+document.getElementById('nextBtn').addEventListener('click', displayNewPokemon);
+document.getElementById('speakBtn').addEventListener('click', () => {
+  speakText(currentPokemon.name);
+});
+
+document.getElementById('rootInput').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') {
+    checkAnswer();
+  }
+});
+
+// Start the game
+displayNewPokemon();
+</script>
+</body></html>
